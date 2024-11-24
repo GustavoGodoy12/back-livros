@@ -2,7 +2,7 @@
   "development": {
     "username": "projetoNODE",
     "password": "gustavinho1",
-    "database": "projetoNODE",
+    "database": "novoProjeto",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },

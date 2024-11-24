@@ -4,10 +4,10 @@ const Product = require('../models/Product');
 exports.addToCart = async (req, res) => {
   try {
     const { userId, productId, quantity } = req.body;
+
     let cart = await Cart.findOne({ where: { userId } });
-    
     if (!cart) {
-      cart = await Cart.create({ userId, items: [] });
+      cart = await Cart.create({ userId });
     }
 
     const product = await Product.findByPk(productId);
@@ -15,24 +15,32 @@ exports.addToCart = async (req, res) => {
       return res.status(404).json({ message: 'Produto não encontrado' });
     }
 
-    const cartItems = cart.items;
-    const existingItemIndex = cartItems.findIndex(item => item.productId === productId);
-
-    if (existingItemIndex > -1) {
-      cartItems[existingItemIndex].quantity += quantity;
-      cartItems[existingItemIndex].total = cartItems[existingItemIndex].quantity * product.preco;
+    const existingCart = await cart.hasProduct(product);
+    if (existingCart) {
+      const cartProduct = await cart.getProducts({ where: { id: productId } });
+      const currentQuantity = cartProduct[0].CartProduct.quantity;
+      const newQuantity = currentQuantity + quantity;
+      const newTotal = newQuantity * product.preco;
+      await cart.addProduct(product, { through: { quantity: newQuantity, total: newTotal } });
     } else {
-      cartItems.push({
-        productId,
-        nome: product.nome,
-        quantity,
-        total: quantity * product.preco
-      });
+      const total = quantity * product.preco;
+      await cart.addProduct(product, { through: { quantity, total } });
     }
 
-    await cart.update({ items: cartItems });
-    res.json(cart);
+    const updatedCart = await Cart.findOne({
+      where: { userId },
+      include: {
+        model: Product,
+        attributes: ['id', 'nome', 'preco', 'descricao'],
+        through: {
+          attributes: ['quantity', 'total']
+        }
+      }
+    });
+
+    res.json(updatedCart);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -40,18 +48,29 @@ exports.addToCart = async (req, res) => {
 exports.removeFromCart = async (req, res) => {
   try {
     const { userId } = req.body;
-    const productId = parseInt(req.params.id);
-    const cart = await Cart.findOne({ where: { userId } });
+    const productId = parseInt(req.params.id, 10);
 
+    const cart = await Cart.findOne({ where: { userId } });
     if (!cart) {
       return res.status(404).json({ message: 'Carrinho não encontrado' });
     }
 
-    const updatedItems = cart.items.filter(item => item.productId !== productId);
-    await cart.update({ items: updatedItems });
+    await cart.removeProduct(productId);
 
-    res.json(cart);
+    const updatedCart = await Cart.findOne({
+      where: { userId },
+      include: {
+        model: Product,
+        attributes: ['id', 'nome', 'preco', 'descricao'],
+        through: {
+          attributes: ['quantity', 'total']
+        }
+      }
+    });
+
+    res.json(updatedCart);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -59,7 +78,18 @@ exports.removeFromCart = async (req, res) => {
 exports.viewCart = async (req, res) => {
   try {
     const { userId } = req.params;
-    const cart = await Cart.findOne({ where: { userId } });
+
+    //puxar pelo id o user do carrinho atual
+    const cart = await Cart.findOne({
+      where: { userId },
+      include: {
+        model: Product,
+        attributes: ['id', 'nome', 'preco', 'descricao'],
+        through: {
+          attributes: ['quantity', 'total']
+        }
+      }
+    });
 
     if (!cart) {
       return res.status(404).json({ message: 'Carrinho não encontrado' });
@@ -67,6 +97,7 @@ exports.viewCart = async (req, res) => {
 
     res.json(cart);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
