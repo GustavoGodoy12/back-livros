@@ -1,12 +1,16 @@
-const Cart = require('../models/Cart');
-const Product = require('../models/Product');
+// controllers/cartController.js
+
+const { Cart, Product } = require('../models'); // Import correto a partir de 'models/index.js'
 
 exports.addToCart = async (req, res) => {
   try {
-    const { userId, productId, quantity } = req.body;
+    const userId = req.user.userId; // Obtém userId do token
+
+    const { productId, quantity } = req.body;
 
     let cart = await Cart.findOne({ where: { userId } });
     if (!cart) {
+      // Isso não deveria acontecer se o carrinho é criado no registro
       cart = await Cart.create({ userId });
     }
 
@@ -15,11 +19,10 @@ exports.addToCart = async (req, res) => {
       return res.status(404).json({ message: 'Produto não encontrado' });
     }
 
-    const existingCart = await cart.hasProduct(product);
-    if (existingCart) {
-      const cartProduct = await cart.getProducts({ where: { id: productId } });
-      const currentQuantity = cartProduct[0].CartProduct.quantity;
-      const newQuantity = currentQuantity + quantity;
+    const existingCartProduct = await cart.getProducts({ where: { id: productId } });
+    if (existingCartProduct.length > 0) {
+      const cartProduct = existingCartProduct[0].CartProduct;
+      const newQuantity = cartProduct.quantity + quantity;
       const newTotal = newQuantity * product.preco;
       await cart.addProduct(product, { through: { quantity: newQuantity, total: newTotal } });
     } else {
@@ -47,7 +50,7 @@ exports.addToCart = async (req, res) => {
 
 exports.removeFromCart = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const userId = req.user.userId; // Obtém userId do token
     const productId = parseInt(req.params.id, 10);
 
     const cart = await Cart.findOne({ where: { userId } });
@@ -77,9 +80,9 @@ exports.removeFromCart = async (req, res) => {
 
 exports.viewCart = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user.userId; // Obtém userId do token
 
-    //puxar pelo id o user do carrinho atual
+    // Puxa pelo id o user do carrinho atual
     const cart = await Cart.findOne({
       where: { userId },
       include: {
