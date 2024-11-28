@@ -1,7 +1,7 @@
 // controllers/userController.js
 
 require('dotenv').config();
-const { User, Cart } = require('../models'); // Import correto a partir de 'models/index.js'
+const { User, Cart, Product } = require('../models'); // Certifique-se de importar Product
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
@@ -23,13 +23,22 @@ exports.register = async (req, res) => {
     // Criar um carrinho para o usuário recém-criado
     await Cart.create({ userId: user.id });
 
+    // Criar um produto associado ao usuário
+    const product = await Product.create({
+      nome: 'Produto Padrão',
+      preco: 0.0,
+      descricao: 'Produto padrão associado ao usuário.',
+      estoque: 100,
+      userId: user.id
+    });
+
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
 
-    res.status(201).json({ message: 'Usuário cadastrado com sucesso!', token, userId: user.id });
+    res.status(201).json({ message: 'Usuário cadastrado com sucesso!', token, userId: user.id, product });
   } catch (error) {
     console.error('Erro no cadastro:', error.message);
     res.status(500).json({ message: 'Erro no servidor. Tente novamente mais tarde.' });

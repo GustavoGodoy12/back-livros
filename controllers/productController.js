@@ -1,8 +1,20 @@
-const Product = require('../models/Product');
+// controllers/productController.js
+
+const { Product, User } = require('../models'); // Certifique-se de importar User se necessário
 
 exports.createProduct = async (req, res) => {
   try {
-    const product = await Product.create(req.body);
+    const { nome, preco, descricao, estoque } = req.body;
+    const userId = req.user.userId; // Obter do token autenticado
+
+    const product = await Product.create({
+      nome,
+      preco,
+      descricao,
+      estoque,
+      userId
+    });
+
     res.status(201).json(product);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -11,7 +23,12 @@ exports.createProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.findAll();
+    const products = await Product.findAll({
+      include: [{
+        model: User,
+        attributes: ['id', 'name', 'email']
+      }]
+    });
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -22,6 +39,10 @@ exports.updateProduct = async (req, res) => {
   try {
     const product = await Product.findByPk(req.params.id);
     if (product) {
+      // Verificar se o produto pertence ao usuário autenticado
+      if (product.userId !== req.user.userId) {
+        return res.status(403).json({ message: 'Ação proibida.' });
+      }
       await product.update(req.body);
       res.json(product);
     } else {
@@ -36,6 +57,10 @@ exports.deleteProduct = async (req, res) => {
   try {
     const product = await Product.findByPk(req.params.id);
     if (product) {
+      // Verificar se o produto pertence ao usuário autenticado
+      if (product.userId !== req.user.userId) {
+        return res.status(403).json({ message: 'Ação proibida.' });
+      }
       await product.destroy();
       res.json({ message: 'Produto deletado com sucesso' });
     } else {

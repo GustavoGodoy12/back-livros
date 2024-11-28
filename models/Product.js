@@ -26,6 +26,14 @@ const Product = sequelize.define('Product', {
     type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: 100
+  },
+  userId: { // Campo para associar o produto ao usuário
+    type: DataTypes.INTEGER,
+    allowNull: true, // Permitir nulo temporariamente
+    references: {
+      model: 'Users', // Nome da tabela Users
+      key: 'id'
+    }
   }
 }, {
   timestamps: false
