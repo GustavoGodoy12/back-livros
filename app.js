@@ -10,13 +10,11 @@ const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 
-
 app.use(cors({
   origin: 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
-
 
 app.use(express.json());
 
@@ -34,7 +32,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Erro no servidor. Tente novamente mais tarde.' });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 sequelize.authenticate()
   .then(() => {

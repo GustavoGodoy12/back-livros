@@ -25,17 +25,15 @@ const User = sequelize.define('User', {
   tableName: 'Users'
 });
 
-//hook que faz antes de salvar o user
+// Hook que faz antes de salvar o usuário
 User.beforeCreate(async (user, options) => {
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);
 });
 
-//compara as senha
+// Compara a senha
 User.prototype.validPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
-
-
 
 module.exports = User;
