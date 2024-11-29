@@ -1,4 +1,3 @@
-// models/Product.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
@@ -27,11 +26,11 @@ const Product = sequelize.define('Product', {
     allowNull: false,
     defaultValue: 100
   },
-  userId: { // Campo para associar o produto ao usuário
+  userId: { 
     type: DataTypes.INTEGER,
-    allowNull: true, // Permitir nulo temporariamente
+    allowNull: true,
     references: {
-      model: 'Users', // Nome da tabela Users
+      model: 'Users', 
       key: 'id'
     }
   }

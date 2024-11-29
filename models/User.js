@@ -1,5 +1,3 @@
-// models/User.js
-
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const bcrypt = require('bcrypt');
@@ -28,13 +26,11 @@ const User = sequelize.define('User', {
   timestamps: false
 });
 
-// Hook para hash da senha antes de criar o usuário
 User.beforeCreate(async (user, options) => {
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);
 });
 
-// Método para validar a senha
 User.prototype.validPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };

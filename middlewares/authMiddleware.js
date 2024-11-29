@@ -1,11 +1,9 @@
-// middlewares/authMiddleware.js
-
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+  const token = authHeader && authHeader.split(' ')[1]; // bearer
 
   if (!token) {
     return res.status(401).json({ message: 'Acesso negado. Token não fornecido.' });

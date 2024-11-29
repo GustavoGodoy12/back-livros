@@ -1,11 +1,8 @@
-// controllers/userController.js
-
 require('dotenv').config();
-const { User, Cart, Product } = require('../models'); // Certifique-se de importar Product
+const { User, Cart, Product } = require('../models'); 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-// Função para registrar um novo usuário
 exports.register = async (req, res) => {
   const { name, email, password } = req.body;
   try {
@@ -17,13 +14,11 @@ exports.register = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      password // A senha será hashada pelo hook no modelo
+      password 
     });
 
-    // Criar um carrinho para o usuário recém-criado
     await Cart.create({ userId: user.id });
 
-    // Criar um produto associado ao usuário
     const product = await Product.create({
       nome: 'Produto Padrão',
       preco: 0.0,
@@ -45,7 +40,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// Função para realizar o login do usuário
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -72,7 +66,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// Função para obter o perfil do usuário autenticado
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.userId, {

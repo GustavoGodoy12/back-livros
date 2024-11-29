@@ -1,12 +1,9 @@
-// controllers/productController.js
-
-const { Product, User } = require('../models'); // Certifique-se de importar User se necessário
+const { Product, User } = require('../models'); 
 
 exports.createProduct = async (req, res) => {
   try {
     const { nome, preco, descricao, estoque } = req.body;
-    const userId = req.user.userId; // Obter do token autenticado
-
+    const userId = req.user.userId; 
     const product = await Product.create({
       nome,
       preco,
@@ -39,7 +36,6 @@ exports.updateProduct = async (req, res) => {
   try {
     const product = await Product.findByPk(req.params.id);
     if (product) {
-      // Verificar se o produto pertence ao usuário autenticado
       if (product.userId !== req.user.userId) {
         return res.status(403).json({ message: 'Ação proibida.' });
       }
@@ -57,7 +53,6 @@ exports.deleteProduct = async (req, res) => {
   try {
     const product = await Product.findByPk(req.params.id);
     if (product) {
-      // Verificar se o produto pertence ao usuário autenticado
       if (product.userId !== req.user.userId) {
         return res.status(403).json({ message: 'Ação proibida.' });
       }

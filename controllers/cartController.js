@@ -1,6 +1,4 @@
-// controllers/cartController.js
-
-const { Cart, Product } = require('../models'); // Import correto a partir de 'models/index.js'
+const { Cart, Product } = require('../models'); 
 
 exports.addToCart = async (req, res) => {
   try {
@@ -10,7 +8,6 @@ exports.addToCart = async (req, res) => {
 
     let cart = await Cart.findOne({ where: { userId } });
     if (!cart) {
-      // Isso não deveria acontecer se o carrinho é criado no registro
       cart = await Cart.create({ userId });
     }
 
@@ -50,7 +47,7 @@ exports.addToCart = async (req, res) => {
 
 exports.removeFromCart = async (req, res) => {
   try {
-    const userId = req.user.userId; // Obtém userId do token
+    const userId = req.user.userId; 
     const productId = parseInt(req.params.id, 10);
 
     const cart = await Cart.findOne({ where: { userId } });
@@ -80,9 +77,8 @@ exports.removeFromCart = async (req, res) => {
 
 exports.viewCart = async (req, res) => {
   try {
-    const userId = req.user.userId; // Obtém userId do token
+    const userId = req.user.userId; 
 
-    // Puxa pelo id o user do carrinho atual
     const cart = await Cart.findOne({
       where: { userId },
       include: {
